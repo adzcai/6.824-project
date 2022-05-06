@@ -4,14 +4,11 @@ import rpyc
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import TensorDataset
-from torchvision import datasets, transforms
-from tqdm import tqdm
 
-from utils import Net, fetch_np_array, get_mnist_data
+from utils import Net, get_mnist_data
 
 
 def train(model, device, train_loader, optimizer, conn):
@@ -30,7 +27,7 @@ def train(model, device, train_loader, optimizer, conn):
             get_model_weights_from_server(model, conn)
 
 
-def test(model, device, test_loader):
+def test(model, device, test_loader, epoch):
     model.eval()
     test_loss = 0
     correct = 0
@@ -44,9 +41,13 @@ def test(model, device, test_loader):
 
     test_loss /= len(test_loader.dataset)
 
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+    print(
+        f"Epoch {epoch} -",
+        '\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+            test_loss, correct, len(test_loader.dataset),
+            100. * correct / len(test_loader.dataset)
+        )
+    )
 
 
 def get_model_weights_from_server(model, conn):
@@ -86,6 +87,9 @@ if __name__ == "__main__":
     get_model_weights_from_server(model, conn)
     model = model.to(device)
     optimizer = optim.SGD(model.parameters(), lr=0)
-    for epoch in tqdm(range(20)):
+
+    epoch = 1
+    while True:
         train(model, device, train_loader, optimizer, conn)
-        test(model, device, test_loader)
+        test(model, device, test_loader, epoch)
+        epoch += 1

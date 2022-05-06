@@ -4,14 +4,8 @@ import os
 import numpy as np
 import requests
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-from torchvision import datasets, transforms
-from torch.utils.data import Dataset, TensorDataset
-from tqdm import tqdm
-import argparse
 
 
 class Net(nn.Module):
